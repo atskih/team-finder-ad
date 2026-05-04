@@ -1,0 +1,25 @@
+from django.urls import path
+
+from . import views
+
+app_name = "projects"
+
+urlpatterns = [
+    path("list/", views.project_list, name="list"),
+    path("skills/", views.skill_suggestions, name="skill_suggestions"),
+    path("create-project/", views.create_project, name="create"),
+    path("<int:project_id>/", views.project_details, name="details"),
+    path("<int:project_id>/edit/", views.edit_project, name="edit"),
+    path("<int:project_id>/complete/", views.complete_project, name="complete"),
+    path(
+        "<int:project_id>/toggle-participate/",
+        views.toggle_participate,
+        name="toggle_participate",
+    ),
+    path("<int:project_id>/skills/add/", views.add_skill, name="add_skill"),
+    path(
+        "<int:project_id>/skills/<int:skill_id>/remove/",
+        views.remove_skill,
+        name="remove_skill",
+    ),
+]

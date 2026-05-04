@@ -1,0 +1,26 @@
+[tool.black]
+line-length = 120
+exclude = '''
+/(
+  \.git
+| venv
+| media
+| staticfiles
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 120
+skip = ["venv", "media", "staticfiles"]
+
+[tool.flake8]
+max-line-length = 120
+exclude = [".git", "venv", "__pycache__", "media", "staticfiles"]
+
+[tool.ruff]
+line-length = 120
+exclude = [".git", "venv", "__pycache__", "media", "staticfiles"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
