@@ -59,12 +59,10 @@ POSTGRES_USER=team_finder
 POSTGRES_PASSWORD=team_finder
 POSTGRES_HOST=localhost
 POSTGRES_PORT=5436
-TASK_VERSION=3
 USE_SQLITE=False
 SQLITE_NAME=db.sqlite3
 ```
 
-Важно: `TASK_VERSION=3`, потому что в проекте оставлена только папка `templates_var3`.
 
 ### 5. Запустить PostgreSQL в Docker
 
@@ -117,19 +115,6 @@ python manage.py runserver
 http://127.0.0.1:8000/projects/list/
 ```
 
-## Проверки перед сдачей
-
-```powershell
-python manage.py check --settings=team_finder.test_settings
-python manage.py test --settings=team_finder.test_settings
-python manage.py makemigrations --check --dry-run --settings=team_finder.test_settings
-black --check .
-isort --check-only .
-flake8 .
-ruff check .
-```
-
-Тестовые настройки используют SQLite только для автотестов. Обычный запуск через `python manage.py runserver` при `USE_SQLITE=False` работает с PostgreSQL из `.env`.
 
 ## Production
 
@@ -146,3 +131,8 @@ ruff check .
 ```powershell
 docker compose -f docker-compose.production.yml up -d --build
 ```
+
+## Контакты
+
+Github: https://github.com/atskih
+Mail: artemvaluyskih1@gmail.com
