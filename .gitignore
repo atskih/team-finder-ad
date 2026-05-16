@@ -149,3 +149,17 @@ dmypy.json
 .ruff_cache/
 
 *.Identifier
+
+# Project local artifacts
+*.sqlite3
+*.sqlite3-journal
+review_all_errors.html
+media/**
+!media/.gitkeep
+staticfiles/**
+!staticfiles/.gitkeep
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+.DS_Store
+Thumbs.db

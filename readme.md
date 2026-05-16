@@ -1,168 +1,148 @@
-# TeamFinder
+﻿# TeamFinder
 
-Реализован backend Django для варианта 3 задания: необходимые навыки проектов и фильтрация проектов по навыкам.
-
-## Проверка реализации
-
-1. Убедитесь, что в `.env` указано `TASK_VERSION=3`.
-2. Запустите PostgreSQL:
-   ```bash
-   docker compose up -d
-   ```
-3. Выполните миграции:
-   ```bash
-   python manage.py migrate
-   ```
-4. При необходимости создайте тестовые данные:
-   ```bash
-   python manage.py seed_demo
-   ```
-   Будет создан тестовый пользователь `maria@yandex.ru` с паролем `password`.
-5. Запустите сервер:
-   ```bash
-   python manage.py runserver
-   ```
+TeamFinder - Django-приложение для поиска командных проектов и участников. В текущей версии реализован вариант 3 задания: необходимые навыки проектов и фильтрация проектов по навыкам.
 
 ## Что реализовано
 
-* Кастомная модель пользователя с входом по email и автогенерацией аватара.
-* Модель проектов с автором, участниками, статусом, ссылкой на GitHub.
-* Регистрация, вход, выход, профиль, редактирование профиля и смена пароля.
-* Создание, редактирование, просмотр проектов, участие и завершение проекта.
-* Вариант 3: необходимые навыки проектов, AJAX-добавление/удаление навыков и фильтр проектов по навыкам.
-* Автоматические тесты основных пользовательских и проектных сценариев.
+- Кастомная модель пользователя с авторизацией по email, профилем, телефоном, GitHub-ссылкой и аватаром.
+- Автогенерация аватара для нового пользователя, если изображение не загружено вручную.
+- Создание, редактирование, просмотр проектов, участие в проектах и закрытие проекта владельцем.
+- Блок "Необходимые навыки" на странице проекта.
+- AJAX-добавление навыков владельцем проекта с подсказками и созданием нового навыка из интерфейса.
+- AJAX-удаление навыков владельцем проекта.
+- Фильтр списка проектов по навыкам через URL вида `?skill=<Название навыка>`.
+- Пагинация списков проектов и участников.
+- Демо-данные через management command `seed_demo`.
+- Тесты основных пользовательских и проектных сценариев.
+- Production-заготовка: `Dockerfile`, `docker-compose.production.yml`, `nginx.conf`, WhiteNoise, gunicorn.
 
-## Подготовка к публичному деплою
+## Локальный запуск
 
-Для публичного деплоя в проекте подготовлено:
+### 1. Перейти в папку проекта
 
-* Есть `Dockerfile`: backend собирается на `python:3.11-slim`, ставит зависимости и запускает Django через `gunicorn`.
-* Есть `docker-compose.production.yml`: поднимает `postgres`, `backend` и `nginx`; backend запускает `migrate`, `collectstatic`, затем `gunicorn`.
-* Есть `nginx.conf`: nginx слушает `80:80`, отдаёт `/static/` и `/media/`, остальные запросы проксирует в Django.
-* В `settings.py` настройки вынесены в env: `DJANGO_SECRET_KEY`, `DJANGO_DEBUG`, `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS`, параметры PostgreSQL.
-* Есть GitHub Actions CI в `.github/workflows/tests.yml`: тесты на Python 3.10/3.11/3.12, `ruff`, проверка миграций, затем сборка Docker-образа. Push в Docker Hub выполняется при наличии секретов `DOCKERHUB_USERNAME` и `DOCKERHUB_TOKEN`.
+```powershell
+cd "C:\Users\artem\OneDrive\Рабочий стол\final_project\team-finder-ad"
+```
 
-Минимальные production-переменные:
+### 2. Создать и активировать виртуальное окружение
+
+```powershell
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+```
+
+Если окружение уже создано, достаточно только активировать его.
+
+### 3. Установить зависимости
+
+```powershell
+pip install -r requirements.txt
+```
+
+### 4. Создать `.env`
+
+Скопируйте пример настроек:
+
+```powershell
+copy .env_example .env
+```
+
+Для локального запуска с Docker/PostgreSQL можно оставить значения из `.env_example`:
 
 ```env
-DJANGO_SECRET_KEY=change_for_real_secret
-DJANGO_DEBUG=False
-ALLOWED_HOSTS=your-domain.com,www.your-domain.com
-CSRF_TRUSTED_ORIGINS=https://your-domain.com,https://www.your-domain.com
-TASK_VERSION=3
+DJANGO_SECRET_KEY=change_for_safety
+DJANGO_DEBUG=True
+ALLOWED_HOSTS=localhost,127.0.0.1
+CSRF_TRUSTED_ORIGINS=
 POSTGRES_DB=team_finder
 POSTGRES_USER=team_finder
-POSTGRES_PASSWORD=change_for_real_password
-POSTGRES_HOST=db
-POSTGRES_PORT=5432
+POSTGRES_PASSWORD=team_finder
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5436
+TASK_VERSION=3
+USE_SQLITE=False
+SQLITE_NAME=db.sqlite3
 ```
 
-Запуск production-сборки:
+Важно: `TASK_VERSION=3`, потому что в проекте оставлена только папка `templates_var3`.
 
-```bash
-docker compose -f docker-compose.production.yml up -d --build
-```
+### 5. Запустить PostgreSQL в Docker
 
-# Первоначальная настройка проекта TeamFinder
+Docker Desktop должен быть запущен.
 
-## 1. Виртуальное окружение
-
-Перед началом работы необходимо создать и активировать виртуальное окружение Python.  
-
-
-1. **Создайте виртуальное окружение (в папке проекта):**
-   ```bash
-   python3 -m venv venv
-   ```
-
-   После этого появится папка `venv`, где будут храниться зависимости проекта.
-
-2. **Активируйте окружение:**
-
-    - **Windows (PowerShell):**
-      ```bash
-      venv\Scripts\Activate.ps1
-      ```
-    - **Windows (cmd):**
-      ```bash
-      venv\Scripts\activate
-      ```
-    - **Linux/Mac:**
-      ```bash
-      source venv/bin/activate
-      ```
-
-3. **Установите зависимости из `requirements.txt`:**
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-   После установки в окружении будут доступны все нужные библиотеки Django-проекта.
-
-## 2. Создание `.env`
-
-Файл `.env` содержит конфиденциальные настройки проекта — ключ Django, параметры БД и другие переменные.  
-
-Особое внимание обратите на строчку `TASK_VERSION=`. 
-Добавьте число, которое соответствует вашему варианту задания. 
-Этот параметр определяет, какие шаблоны использовать для сайта (из папок `templates_var1`/`templates_var2`/`templates_var3`).
-Лишние две папки не из вашего варианта можно удалить.
-
-В репозитории есть пример `.env_example`, который нужно скопировать и заполнить:
-
-```bash
-cp .env_example .env
-```
-
-После этого откройте `.env` и укажите свои значения.  
-
-| Переменная            | Назначение                                                                                                                                                 |
-|-----------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **DJANGO_SECRET_KEY** | Секретный ключ Django, используемый для подписи cookie и токенов. Можно сгенерировать при помощи `get_random_secret_key` из `django.core.management.utils` |
-| **DJANGO_DEBUG**      | Режим отладки. Установите `True` во время разработки.                                                                                                      |
-| **POSTGRES_DB**       | Имя базы данных PostgreSQL, которую будет использовать Django.                                                                                             |
-| **POSTGRES_USER**     | Имя пользователя PostgreSQL.                                                                                                                               |
-| **POSTGRES_PASSWORD** | Пароль пользователя PostgreSQL.                                                                                                                            |
-| **POSTGRES_HOST**     | Адрес сервера БД. В случае локальной разработки localhost.                                                                                                 |
-| **POSTGRES_PORT**     | Порт подключения к БД (по умолчанию `5432`).                                                                                                               |
-| **TASK_VERSION**      | Номер варианта вашего задания. Используется для определения набора HTML-шаблонов.                                                                          |
-
----
-
-## 3. Запуск PostgreSQL
-
-Для работы приложения **TeamFinder** используется база данных **PostgreSQL**.
-По условию задания база данных должна запускаться в контейнере Docker.
-
-В проекте уже есть пример файла `docker-compose.yml`. 
-Используйте готовый или измените под свои нужды, а дальше запускайте:
-
-```bash
+```powershell
 docker compose up -d
 ```
 
-`-d` значит `detach`, то есть контейнер продолжит работать в фоне. Чтобы его остановить, надо будет ввести
+Проверить контейнер:
 
-```bash
+```powershell
+docker compose ps
+```
+
+Остановить контейнер при необходимости:
+
+```powershell
 docker compose down
 ```
 
-Если возникает ошибка "permission denied while trying to connect to the Docker daemon socket", то может потребоваться добавить `sudo` перед командой.
+### 6. Выполнить миграции
 
----
+```powershell
+python manage.py migrate
+```
 
-После этого база данных будет доступна по адресу `localhost:5432`.  
-Нужно будет использовать эти же параметры в файле `.env`.
+### 7. Создать демо-данные, если нужны
 
-> Если на компьютере уже развёрнут сервер БД на порте 5432, и вы не хотите создавать БД для этого проекта на этом сервере, целесообразнее будет изменить порт на нестандартный.
-> Нестандартный порт нужно будет поставить слева в паре портов в docker-compose (`"5433":"5432"`) и в .env.
+```powershell
+python manage.py seed_demo
+```
 
-## 4. Запуск Django
+После этого будет доступен пользователь:
 
-После заполнения `.env` и настройки базы данных можно запустить сервер разработки:
+```text
+email: maria@yandex.ru
+password: password
+```
 
-```bash
+### 8. Запустить Django
+
+```powershell
 python manage.py runserver
 ```
 
-Теперь проект доступен по адресу [http://localhost:8000](http://localhost:8000).
+Открыть проект:
+
+```text
+http://127.0.0.1:8000/projects/list/
+```
+
+## Проверки перед сдачей
+
+```powershell
+python manage.py check --settings=team_finder.test_settings
+python manage.py test --settings=team_finder.test_settings
+python manage.py makemigrations --check --dry-run --settings=team_finder.test_settings
+black --check .
+isort --check-only .
+flake8 .
+ruff check .
+```
+
+Тестовые настройки используют SQLite только для автотестов. Обычный запуск через `python manage.py runserver` при `USE_SQLITE=False` работает с PostgreSQL из `.env`.
+
+## Production
+
+Для публичного деплоя в проекте подготовлены:
+
+- `Dockerfile` - сборка backend на Python 3.11 slim, установка зависимостей и запуск через gunicorn.
+- `docker-compose.production.yml` - сервисы `postgres`, `backend`, `nginx`, запуск `migrate`, `collectstatic`, затем `gunicorn`.
+- `nginx.conf` - раздача `/static/` и `/media/`, проксирование остальных запросов в Django.
+- Настройки из env: `DJANGO_SECRET_KEY`, `DJANGO_DEBUG`, `ALLOWED_HOSTS`, `CSRF_TRUSTED_ORIGINS`, параметры PostgreSQL.
+- GitHub Actions CI в `.github/workflows/tests.yml`.
+
+Минимальный production-запуск:
+
+```powershell
+docker compose -f docker-compose.production.yml up -d --build
+```

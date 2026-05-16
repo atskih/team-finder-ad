@@ -1,9 +1,10 @@
 import re
-from urllib.parse import urlparse
 
 from django import forms
 from django.contrib.auth import authenticate
 from django.contrib.auth.forms import PasswordChangeForm
+
+from team_finder.validators import validate_github_url
 
 from .models import User
 
@@ -89,13 +90,7 @@ class ProfileForm(forms.ModelForm):
         return normalized
 
     def clean_github_url(self):
-        github_url = self.cleaned_data.get("github_url", "").strip()
-        if not github_url:
-            return github_url
-        host = urlparse(github_url).netloc.lower()
-        if host not in {"github.com", "www.github.com"}:
-            raise forms.ValidationError("Ссылка должна вести на GitHub")
-        return github_url
+        return validate_github_url(self.cleaned_data.get("github_url", ""))
 
 
 class UserPasswordChangeForm(PasswordChangeForm):

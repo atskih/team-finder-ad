@@ -1,0 +1,45 @@
+{
+  "users": [
+    {
+      "email": "maria@yandex.ru",
+      "password": "password",
+      "name": "Мария",
+      "surname": "Иванова"
+    },
+    {
+      "email": "alex@example.com",
+      "password": "password",
+      "name": "Алексей",
+      "surname": "Петров"
+    },
+    {
+      "email": "olga@example.com",
+      "password": "password",
+      "name": "Ольга",
+      "surname": "Смирнова"
+    }
+  ],
+  "projects": [
+    {
+      "owner": "maria@yandex.ru",
+      "name": "Demo project 1",
+      "description": "Тестовый проект для проверки TeamFinder.",
+      "github_url": "https://github.com/example/teamfinder",
+      "skills": ["Python", "Django"]
+    },
+    {
+      "owner": "alex@example.com",
+      "name": "Demo project 2",
+      "description": "Тестовый проект для проверки TeamFinder.",
+      "github_url": "https://github.com/example/teamfinder",
+      "skills": ["Django"]
+    },
+    {
+      "owner": "olga@example.com",
+      "name": "Demo project 3",
+      "description": "Тестовый проект для проверки TeamFinder.",
+      "github_url": "https://github.com/example/teamfinder",
+      "skills": ["UI/UX"]
+    }
+  ]
+}

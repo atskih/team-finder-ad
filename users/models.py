@@ -3,7 +3,6 @@ from uuid import uuid4
 
 from django.contrib.auth.models import (
     AbstractBaseUser,
-    BaseUserManager,
     PermissionsMixin,
 )
 from django.core.files.base import ContentFile
@@ -11,39 +10,31 @@ from django.db import models
 from django.utils import timezone
 from PIL import Image, ImageDraw, ImageFont
 
-
-class UserManager(BaseUserManager):
-    def create_user(self, email, password=None, **extra_fields):
-        if not email:
-            raise ValueError("Email is required")
-        email = self.normalize_email(email)
-        user = self.model(email=email, **extra_fields)
-        user.set_password(password)
-        user.save(using=self._db)
-        return user
-
-    def create_superuser(self, email, password=None, **extra_fields):
-        extra_fields.setdefault("is_staff", True)
-        extra_fields.setdefault("is_superuser", True)
-        extra_fields.setdefault("name", "Admin")
-        extra_fields.setdefault("surname", "User")
-
-        if extra_fields.get("is_staff") is not True:
-            raise ValueError("Superuser must have is_staff=True")
-        if extra_fields.get("is_superuser") is not True:
-            raise ValueError("Superuser must have is_superuser=True")
-
-        return self.create_user(email, password, **extra_fields)
+from .constants import (
+    AVATAR_BACKGROUND_COLOR,
+    AVATAR_FONT_NAME,
+    AVATAR_FONT_SIZE,
+    AVATAR_FORMAT,
+    AVATAR_IMAGE_SIZE,
+    AVATAR_TEXT_ANCHOR,
+    AVATAR_TEXT_COLOR,
+    AVATAR_UPLOAD_PATH,
+    AVATAR_VERTICAL_OFFSET,
+    USER_ABOUT_MAX_LENGTH,
+    USER_NAME_MAX_LENGTH,
+    USER_PHONE_MAX_LENGTH,
+)
+from .managers import UserManager
 
 
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(unique=True)
-    name = models.CharField(max_length=124)
-    surname = models.CharField(max_length=124)
-    avatar = models.ImageField(upload_to="avatars/", blank=True)
-    phone = models.CharField(max_length=12, blank=True)
+    name = models.CharField(max_length=USER_NAME_MAX_LENGTH)
+    surname = models.CharField(max_length=USER_NAME_MAX_LENGTH)
+    avatar = models.ImageField(upload_to=AVATAR_UPLOAD_PATH, blank=True)
+    phone = models.CharField(max_length=USER_PHONE_MAX_LENGTH, blank=True)
     github_url = models.URLField(blank=True)
-    about = models.TextField(max_length=256, blank=True)
+    about = models.TextField(max_length=USER_ABOUT_MAX_LENGTH, blank=True)
     date_joined = models.DateTimeField(default=timezone.now)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
@@ -65,21 +56,24 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def _generate_avatar(self):
         initial = (self.name or self.email or "U")[0].upper()
-        bg_color = (68, 100, 173)
-        image = Image.new("RGB", (256, 256), bg_color)
+        image_size = (AVATAR_IMAGE_SIZE, AVATAR_IMAGE_SIZE)
+        image = Image.new("RGB", image_size, AVATAR_BACKGROUND_COLOR)
         draw = ImageDraw.Draw(image)
 
         try:
-            font = ImageFont.truetype("arial.ttf", 132)
+            font = ImageFont.truetype(AVATAR_FONT_NAME, AVATAR_FONT_SIZE)
         except OSError:
             font = ImageFont.load_default()
 
-        bbox = draw.textbbox((0, 0), initial, font=font)
+        bbox = draw.textbbox(AVATAR_TEXT_ANCHOR, initial, font=font)
         text_width = bbox[2] - bbox[0]
         text_height = bbox[3] - bbox[1]
-        position = ((256 - text_width) / 2, (256 - text_height) / 2 - 10)
-        draw.text(position, initial, fill=(255, 255, 255), font=font)
+        position = (
+            (AVATAR_IMAGE_SIZE - text_width) / 2,
+            (AVATAR_IMAGE_SIZE - text_height) / 2 - AVATAR_VERTICAL_OFFSET,
+        )
+        draw.text(position, initial, fill=AVATAR_TEXT_COLOR, font=font)
 
         buffer = BytesIO()
-        image.save(buffer, format="PNG")
+        image.save(buffer, format=AVATAR_FORMAT)
         return ContentFile(buffer.getvalue())
